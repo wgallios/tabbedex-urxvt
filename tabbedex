@@ -834,21 +834,6 @@ package urxvt::ext::tabbedex::tab;
 # simply proxies all interesting calls back to the tabbedex class.
 
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    for my $hook qw(osc_seq_perl start destroy user_command key_press property_notify add_lines) {
-        eval qq{
-        sub on_$hook {
-        my \$parent = \$_[0]{term}{parent}
-            or return;
-        \$parent->tab_$hook (\@_)
-        }
-        };
-        die if $@;
-    }
-=======
-=======
->>>>>>> 5615eca659f075b762c0e7e391b40831f4b521ab
    for my $hook (qw(osc_seq_perl start destroy user_command key_press property_notify add_lines)) {
       eval qq{
          sub on_$hook {
@@ -859,5 +844,4 @@ package urxvt::ext::tabbedex::tab;
       };
       die if $@;
    }
->>>>>>> 5615eca659f075b762c0e7e391b40831f4b521ab
 }
