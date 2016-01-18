@@ -632,6 +632,9 @@ sub tab_key_press {
         } elsif ($keysym == 0xff52) {
             $self->rename_tab($tab);
             return 1;
+        } elsif ($keysym == 0xff57) { # end
+            $tab->destroy;
+            return 1;
         }
     } elsif ($event->{state} & urxvt::ControlMask) {
         if ($keysym == 0xff51 || $keysym == 0xff53) {
