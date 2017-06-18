@@ -1,4 +1,4 @@
-Perl script to support tab on urxvt.
+Perl script to support tabs on urxvt with powerline symbols!! Yess
 
 ###Install
 To install clone the repository:

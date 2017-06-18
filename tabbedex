@@ -167,6 +167,7 @@ sub refresh {
 
     # Note that the tab bar uses space above the scroll bar.
     my $ncol = $self->ncol;
+    my $wasCur = 0;
 
     my $text = " " x $ncol;
     my $rend = [($self->{rs_tabbar}) x $ncol];
@@ -219,30 +220,83 @@ sub refresh {
             my $act = $self->tab_activity_mark($tab);
             my $txt = sprintf "%s%s%s", $act, $name, $act;
             my $len = length $txt;
+            my $style = $self->{rs_tab};
+            my $buffer = $ofs;
 
-            substr $text, $ofs, $len + 1, "$txt|";
-            @$rend[$ofs .. $ofs + $len - 1] = ($self->{rs_tab}) x $len
-            if $tab == $self->{cur};
+            if ($idx > 0) {
+                if ($tab == $self->{cur} || $wasCur == 0) {
+                    # my $arrow = $tab == $self->{cur} ? "" : "";
+                    my $arrow = $tab == $self->{cur} ? "" : "";
 
-            push @ofs, [ $ofs, $ofs + $len, $idx ];
-            $ofs += $len + 1;
+                    substr $text, $buffer, 1, $arrow;
+                    @$rend[$buffer .. $buffer + 1] = ($tab == $self->{cur} ? $self->{rs_tab_alt} : $self->{rs_tab});
+                    $buffer += 1;
+                    # $buffer++;
+                    
+                    # $ofs++;
+                    # $len += 1;
+                }
+            }
+
+            # $len += 2;
+            substr $text, $buffer, $len, "$txt";
+            @$rend[$buffer .. $buffer + $len] = ($tab == $self->{cur} ? $self->{rs_tab_alt} : $self->{rs_tab}) x ($len) ;
+        
+            # $ofs += $len;
+            $buffer += $len;
+
+            # @$rend[$len - 1] = ($self->{rs_tab_alt});
+            if ($tab == $self->{cur}  || $idx == $#{$self->{tabs}}) {
+
+                substr $text, $buffer, 1, "";
+
+                if ($tab == $self->{cur}  && $idx == $#{$self->{tabs}}) {
+                    $style = $self->{rs_tab_title_alt};
+                }
+                if ($tab != $self->{cur}  && $idx == $#{$self->{tabs}}) {
+                    $style = $self->{rs_tab_title};
+                }
+                    
+                @$rend[$buffer .. $buffer + 1] = ($style);
+                # @$rend[$ofs .. $ofs + 1] = ($tab == $self->{cur} ? $self->{rs_tab_title_alt} : $self->{rs_tab_title}) x ($len);
+                $buffer += 1;
+                # ++$buffer;
+                # ++$ofs;
+            }
+
+            $wasCur = ($tab == $self->{cur}) ? 1 : 0;
+
+            push @ofs, [ $ofs, $buffer, $idx ];
+            $ofs += ($buffer - $ofs);
         }
         ++$idx;
     }
 
-    substr $text, --$ofs, 1, ' '; # remove last '|'
+    # substr $text, --$ofs, 1, ' '; # remove last '|'
 
-    if ($self->{tab_title} && $ofs + 3 < $ncol) {
+    if ($self->{tab_title} && $ofs  < $ncol) {
         my $term = $self->{term};
         my @str = $term->XGetWindowProperty($term->parent, $self->{tab_title});
         if (@str && $str[2]) {
-            my $str = '| ' . $str[2];
+            # my $str = '| ' . $str[2];
+            # my $str = '' . $str[2] . "";
+            my $str = $str[2];
             my $len = length $str;
             $len = $ncol - $ofs if $ofs + $len > $ncol;
-            substr $text, $ofs, $len, substr $str, 0, $len;
-            @$rend[$ofs + 2 .. $ofs + $len - 1] = ($self->{rs_title}) x ($len - 2);
+            substr $text, $ofs, $len, $str[2];
+            @$rend[$ofs  .. $ofs+  $len] = ($self->{rs_title}) x ($len);
+
+            # $ofs += $len ;
+
+            substr $text, $ofs + $len, 1, "";
+            @$rend[$ofs + $len .. $ofs + $len  ] = ($self->{rs_title_alt});
+            $ofs += $len + 1;
+
         }
     }
+
+    # substr $text,  $ofs, $ofs - $ncol, ' ';
+    # @$rend[$ofs .. $ncol] = ($self->{rs_tabbar});
 
     $self->{tabofs} = \@ofs;
 
@@ -448,9 +502,18 @@ sub on_init {
     defined $titfg or $titfg = 2;
     defined $titbg or $titbg = 0;
 
-    $self->{rs_tabbar} = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $fg    + 2, $bg    + 2);
+    $self->{rs_tabbar} = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $fg + 2, $bg + 2);
     $self->{rs_tab}    = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $tabfg + 2, $tabbg + 2);
     $self->{rs_title}  = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $titfg + 2, $titbg + 2);
+
+    $self->{rs_tabbar_alt} = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $bg + 2, $fg + 2);
+    $self->{rs_tab_alt}    = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $tabbg + 2, $tabfg + 2);
+    $self->{rs_title_alt}  = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $titbg + 2, $bg + 2);
+
+    $self->{rs_tab_title}    = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $tabbg + 2, $titbg + 2);
+    $self->{rs_tab_title_alt}    = urxvt::SET_COLOR (urxvt::DEFAULT_RSTYLE, $tabfg + 2, $titbg + 2);
+
+
 
 
     my $timeouts = $self->x_resource ("tabbar-timeouts");
@@ -619,27 +682,34 @@ sub tab_key_press {
     return () if ($self->{no_default_keys});
 
     if ($event->{state} & urxvt::ShiftMask) {
-        if ($keysym == 0xff51 || $keysym == 0xff53) {
-            if (@{ $self->{tabs} } > 1) {
-                $self->change_tab($tab, $keysym - 0xff52);
-            }
-            return 1;
-
-        } elsif ($keysym == 0xff54) {
-            $self->new_tab(@{$self->{argv}});
-            return 1;
-
-        } elsif ($keysym == 0xff52) {
-            $self->rename_tab($tab);
-            return 1;
-        } elsif ($keysym == 0xff57) { # end
+        # if ($keysym == 0xff51 || $keysym == 0xff53) {
+            # if (@{ $self->{tabs} } > 1) {
+                # $self->change_tab($tab, $keysym - 0xff52);
+            # }
+            # return 1;
+        if ($keysym == 0xff57) { # end
             $tab->destroy;
             return 1;
         }
     } elsif ($event->{state} & urxvt::ControlMask) {
         if ($keysym == 0xff51 || $keysym == 0xff53) {
-            $self->move_tab($tab, $keysym - 0xff52);
+            if (@{$self->{tabs}} > 1) {
+                $self->change_tab($tab, $keysym - 0xff52);
+            }
             return 1;
+        } elsif ($keysym == 0xff55) { # page up
+            $self->move_tab($tab, 1);
+            return 1;
+        } elsif ($keysym == 0xff56) { # page down
+            $self->move_tab($tab, -1);
+            return 1;
+
+        } elsif ($keysym == 0xff52) {
+            $self->new_tab(@{$self->{argv}}); # up arrow
+
+            return 1;
+        } elsif ($keysym == 0xff54) { # down arrow
+            $self->rename_tab($tab);
         }
     }
 
