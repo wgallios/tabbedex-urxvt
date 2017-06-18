@@ -1,13 +1,13 @@
 Perl script to support tabs on urxvt with powerline symbols!! Yess
 
-###Install
+### Install
 To install clone the repository:
 
-    git clone https://github.com/shaggytwodope/tabbedex-urxvt.git
+    git clone https://github.com/dtrip/tabbedex-urxvt.git
     cd tabbedex-urxvt
     sudo cp tabbedex /usr/lib/urxvt/perl/tabbedex
 
-###Configuration
+### Configuration
 
     URxvt.perl-ext-common:  default,matcher,tabbedex
     URxvt.url-launcher:      dwb
