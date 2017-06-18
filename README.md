@@ -1,8 +1,7 @@
 ###
 Perl script to support tabs on urxvt with powerline symbols!! Yess
 
-![alt text][screenshot]
-[screenshot]: https://raw.githubusercontent.com/dtrip/tabbedex-urxvt/master/screenshot.png "screenshot"
+![screenshot](https://raw.githubusercontent.com/dtrip/tabbedex-urxvt/master/screenshot.png)
 
 ## Install
 To install clone the repository:
