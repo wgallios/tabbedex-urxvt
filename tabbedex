@@ -216,7 +216,7 @@ sub refresh {
     $idx = 0;
     for my $tab (@{ $self->{tabs} }) {
         if ($idx >= $tabs_to_skip) {
-            my $name = substr($tab->{name} ? $tab->{name} : $idx, -$max_len);
+            my $name = substr($tab->{name} ? $tab->{name} : $idx + 1, -$max_len);
             my $act = $self->tab_activity_mark($tab);
             my $txt = sprintf "%s%s%s", $act, $name, $act;
             my $len = length $txt;
@@ -710,6 +710,20 @@ sub tab_key_press {
             return 1;
         } elsif ($keysym == 0xff54) { # down arrow
             $self->rename_tab($tab);
+        }
+    } elsif ($event->{state} && urxvt::Mod1Mask) {
+        if (0x31 <= $keysym && $keysym <= 0x39) {
+            my $id = $keysym - 0x31;
+            if ($id < @{$self->{tabs}}) {
+                $self->make_current($self->{tabs}[$id]);
+            }
+            return 1;
+        }
+        elsif (keysym == 0x30) {
+            if (9 < @{ $self->{tabs}}) {
+                $self->make_current($self->{tabs}[9]);
+            }
+            return 1;
         }
     }
 

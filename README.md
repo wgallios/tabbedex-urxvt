@@ -1,6 +1,9 @@
 ###
 Perl script to support tabs on urxvt with powerline symbols!! Yess
 
+In addition to standard tabbedex it also allows you to select first 10 tabs
+using Alt-number.
+
 ![screenshot](https://raw.githubusercontent.com/dtrip/tabbedex-urxvt/master/screenshot.png)
 
 ## Install
