@@ -175,8 +175,8 @@ sub refresh {
     my ($ofs, $idx, @ofs) = (0, 0);
 
     if ($self->{new_button}) {
-        substr $text, 0, 7, "[NEW] |";
-        @$rend[0 .. 5] = ($self->{rs_tab}) x 6;
+        substr $text, 0, 7, "[NEW] ";
+        @$rend[0 .. 6] = ($self->{rs_tab}) x 7;
         push @ofs, [0, 6, -1 ];
         $ofs = 7;
     }
