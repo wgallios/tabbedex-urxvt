@@ -719,7 +719,7 @@ sub tab_key_press {
             }
             return 1;
         }
-        elsif (keysym == 0x30) {
+        elsif ($keysym == 0x30) {
             if (9 < @{ $self->{tabs}}) {
                 $self->make_current($self->{tabs}[9]);
             }
